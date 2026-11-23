@@ -1,0 +1,636 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Renten-Countdown</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap">
+
+<style>
+  :root {
+    --bg: transparent;
+    --bg2: rgba(255,255,255,0.15);
+    --card: rgba(255,255,255,0.18);
+    --border: rgba(255,255,255,0.22);
+    --fg: #eef3e8;
+    --muted: #7a9168;
+    --accent: #8aad5a;
+    --accent2: #6b9140;
+    --gold: #d4a84b;
+    --gold2: #b8872a;
+    --green: #a3c97a;
+    --green2: #6b9140;
+    --purple: #b8d48a;
+    --purple2: #7a9e50;
+    --red: #c8a060;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #eef3fc;
+      --bg2: #dde8f8;
+      --card: #ffffff;
+      --border: #c0d4ee;
+      --fg: #0a1020;
+      --muted: #4a5a7a;
+      --accent: #0277bd;
+      --accent2: #0288d1;
+      --gold: #b45309;
+      --gold2: #d97706;
+      --green: #047857;
+      --green2: #059669;
+      --purple: #6d28d9;
+      --purple2: #7c3aed;
+      --red: #dc2626;
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #eef3fc;
+    --bg2: #dde8f8;
+    --card: #ffffff;
+    --border: #c0d4ee;
+    --fg: #0a1020;
+    --muted: #4a5a7a;
+    --accent: #0277bd;
+    --accent2: #0288d1;
+    --gold: #b45309;
+    --gold2: #d97706;
+    --green: #047857;
+    --green2: #059669;
+    --purple: #6d28d9;
+    --purple2: #7c3aed;
+    --red: #dc2626;
+    color-scheme: light;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background: linear-gradient(to bottom, #101810 0%, #1e2b18 30%, #c8d8b8 65%, #e8f0d8 100%);
+    color: var(--fg);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 2rem;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    width: 100%; max-width: 760px;
+    text-align: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 2.5rem) max(16px, env(safe-area-inset-left, 0px)) 2.5rem;
+    margin-top: calc(-1 * env(safe-area-inset-top, 0px));
+    background: transparent;
+    border-radius: 14px;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(138,173,90,.08) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(163,201,122,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Sterne-Animation */
+  .stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.1; transform: scale(1); }
+    50%      { opacity: 0.9; transform: scale(1.4); }
+  }
+
+  .eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    position: relative;
+  }
+
+  /* Großer animierter Tageszähler */
+  .hero-days {
+    font-size: clamp(4.5rem, 18vw, 9rem);
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: #eef3e8;
+    text-shadow: 0 0 24px rgba(138,173,90,.5), 0 2px 8px rgba(0,0,0,.4);
+    animation: pulse-glow 4s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+  }
+  @keyframes pulse-glow {
+    0%,100% { filter: drop-shadow(0 0 12px rgba(138,173,90,.35)); }
+    50%      { filter: drop-shadow(0 0 28px rgba(138,173,90,.65)); }
+  }
+  .hero-label {
+    font-size: 1rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+    margin-bottom: 0.2rem;
+    position: relative;
+  }
+  .hero-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    position: relative;
+  }
+
+  /* ── SCHICHT-BANNER ── */
+  .schicht-banner {
+    width: 100%;
+    max-width: 760px;
+    border-radius: 14px;
+    padding: 1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    border: 1px solid var(--border);
+    transition: background 0.4s, border-color 0.4s;
+  }
+  .schicht-banner.frei   { background: rgba(80,80,80,0.35); }
+  .schicht-banner.frueh  { background: linear-gradient(90deg, #2a2410, var(--card)); border-color: #7a6520; }
+  .schicht-banner.spaet  { background: linear-gradient(90deg, #1a2a10, var(--card)); border-color: #4a7020; }
+  .schicht-banner.nacht  { background: linear-gradient(90deg, #101e0e, var(--card)); border-color: #2a5020; }
+  .schicht-left { font-size: 1.2rem; font-weight: 700; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,.5); }
+  .schicht-badge {
+    font-size: 1.8rem; font-weight: 800;
+    padding: 0.4rem 1.4rem;
+    border-radius: 999px;
+  }
+  .schicht-banner.frei   .schicht-badge { background: var(--border); color: var(--fg); }
+  .schicht-banner.frueh  .schicht-badge { background: linear-gradient(90deg,#f59e0b,#fbbf24); color: #000; }
+  .schicht-banner.spaet  .schicht-badge { background: linear-gradient(90deg,#7c3aed,#a78bfa); color: #fff; }
+  .schicht-banner.nacht  .schicht-badge { background: linear-gradient(90deg,#1e40af,#3b82f6); color: #fff; }
+
+  /* ── KACHELN REIHE 1 ── */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    width: 100%;
+    max-width: 760px;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 540px) {
+    .tiles { grid-template-columns: 1fr; }
+  }
+
+  .tile {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem 1rem 1.2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .tile:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+
+  /* Farbige Linie oben + Schimmer */
+  .tile::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .tile::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.04), transparent);
+    animation: shimmer 4s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%   { left: -60%; }
+    100% { left: 120%; }
+  }
+
+  .t-blue::before   { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+  .t-gold::before   { background: linear-gradient(90deg, var(--gold2), var(--gold)); }
+  .t-green::before  { background: linear-gradient(90deg, var(--green2), var(--green)); }
+  .t-purple::before { background: linear-gradient(90deg, var(--purple2), var(--purple)); }
+  .t-red::before    { background: linear-gradient(90deg, #dc2626, var(--red)); }
+  .t-teal::before   { background: linear-gradient(90deg, #0d9488, #2dd4bf); }
+
+  .tile-label {
+    font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.7rem;
+  }
+  .tile-num {
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-weight: 800; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    animation: count-in 0.5s ease both;
+  }
+  @keyframes count-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .t-blue   .tile-num { color: var(--accent); }
+  .t-gold   .tile-num { color: var(--gold); }
+  .t-green  .tile-num { color: var(--green); }
+  .t-purple .tile-num { color: var(--purple); }
+  .t-red    .tile-num { color: var(--red); }
+  .t-teal   .tile-num { color: #2dd4bf; }
+
+  .tile-unit { font-size: 0.7rem; color: var(--muted); margin-top: 0.35rem; }
+
+  /* ── DETAIL-BOXEN ── */
+  .details {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 760px;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 540px) { .details { grid-template-columns: repeat(2,1fr); } }
+
+  .dbox {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 0.6rem;
+    text-align: center;
+  }
+  .dbox-num {
+    font-size: 1.25rem; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+  }
+  .dbox-label {
+    font-size: 0.58rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-top: 0.2rem;
+  }
+
+  /* ── FORTSCHRITT ── */
+  .progress-section {
+    width: 100%; max-width: 760px;
+    margin-bottom: 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+  }
+  .progress-header {
+    display: flex; justify-content: space-between;
+    font-size: 0.65rem; color: var(--muted); font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  .progress-bg {
+    width: 100%; height: 10px;
+    background: var(--border); border-radius: 5px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a7030, #6b9140, #a3c97a);
+    border-radius: 5px;
+    transition: width 1s ease;
+    position: relative;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0; width: 6px;
+    background: white;
+    border-radius: 3px;
+    opacity: 0.6;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 0.3; } 50% { opacity: 0.9; }
+  }
+  .progress-pct {
+    text-align: right;
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-weight: 700;
+    margin-top: 0.4rem;
+  }
+
+  /* ── WOCHENENDEN ── */
+  .we-box {
+    width: 100%; max-width: 760px;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 540px) { .we-box { grid-template-columns: 1fr; } }
+
+  .kranz {
+    display: flex;
+    justify-content: center;
+    margin: 0.3rem 0 0.5rem;
+    animation: kranz-pulse 4s ease-in-out infinite;
+  }
+  .kranz svg { width: 120px; height: 56px; }
+  @keyframes kranz-pulse {
+    0%,100% { transform: scale(1);   filter: drop-shadow(0 0 4px #c8a830aa); }
+    50%      { transform: scale(1.07); filter: drop-shadow(0 0 12px #f0c84088); }
+  }
+  footer {
+    font-size: 0.65rem; color: var(--muted); text-align: center; margin-top: 0.5rem;
+  }
+</style>
+
+<!-- Sterne -->
+<div class="stars" id="stars"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label" style="margin-top:0;margin-bottom:0.3rem;font-size:1.3rem;font-weight:700;color:#eef3e8;text-shadow:0 0 24px rgba(138,173,90,.5), 0 2px 8px rgba(0,0,0,.4);">Tage bis zur Rente</div>
+  <div class="hero-days" id="hdr-tage">–</div>
+  <div class="kranz">
+    <svg viewBox="0 0 120 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- left branch -->
+      <g transform="translate(60,28)">
+        <!-- stem -->
+        <path d="M0,0 Q-18,-4 -38,-2" stroke="#7a9140" stroke-width="1.5" fill="none"/>
+        <!-- leaves left -->
+        <ellipse cx="-10" cy="-6" rx="7" ry="3.5" fill="#8aad5a" transform="rotate(-25,-10,-6)"/>
+        <ellipse cx="-19" cy="-9" rx="7" ry="3.5" fill="#6b9140" transform="rotate(-15,-19,-9)"/>
+        <ellipse cx="-28" cy="-9" rx="7" ry="3.5" fill="#8aad5a" transform="rotate(-5,-28,-9)"/>
+        <ellipse cx="-36" cy="-6" rx="6" ry="3" fill="#6b9140" transform="rotate(10,-36,-6)"/>
+        <ellipse cx="-13" cy="2" rx="7" ry="3.5" fill="#6b9140" transform="rotate(20,-13,2)"/>
+        <ellipse cx="-22" cy="2" rx="7" ry="3.5" fill="#8aad5a" transform="rotate(10,-22,2)"/>
+        <ellipse cx="-31" cy="0" rx="6" ry="3" fill="#6b9140" transform="rotate(0,-31,0)"/>
+        <!-- gold highlights -->
+        <ellipse cx="-10" cy="-7" rx="3" ry="1.5" fill="#d4a84b" opacity="0.5" transform="rotate(-25,-10,-7)"/>
+        <ellipse cx="-19" cy="-10" rx="3" ry="1.5" fill="#d4a84b" opacity="0.5" transform="rotate(-15,-19,-10)"/>
+        <ellipse cx="-28" cy="-10" rx="3" ry="1.5" fill="#d4a84b" opacity="0.5" transform="rotate(-5,-28,-10)"/>
+      </g>
+      <!-- right branch (mirror) -->
+      <g transform="translate(60,28) scale(-1,1)">
+        <path d="M0,0 Q-18,-4 -38,-2" stroke="#7a9140" stroke-width="1.5" fill="none"/>
+        <ellipse cx="-10" cy="-6" rx="7" ry="3.5" fill="#8aad5a" transform="rotate(-25,-10,-6)"/>
+        <ellipse cx="-19" cy="-9" rx="7" ry="3.5" fill="#6b9140" transform="rotate(-15,-19,-9)"/>
+        <ellipse cx="-28" cy="-9" rx="7" ry="3.5" fill="#8aad5a" transform="rotate(-5,-28,-9)"/>
+        <ellipse cx="-36" cy="-6" rx="6" ry="3" fill="#6b9140" transform="rotate(10,-36,-6)"/>
+        <ellipse cx="-13" cy="2" rx="7" ry="3.5" fill="#6b9140" transform="rotate(20,-13,2)"/>
+        <ellipse cx="-22" cy="2" rx="7" ry="3.5" fill="#8aad5a" transform="rotate(10,-22,2)"/>
+        <ellipse cx="-31" cy="0" rx="6" ry="3" fill="#6b9140" transform="rotate(0,-31,0)"/>
+        <ellipse cx="-10" cy="-7" rx="3" ry="1.5" fill="#d4a84b" opacity="0.5" transform="rotate(-25,-10,-7)"/>
+        <ellipse cx="-19" cy="-10" rx="3" ry="1.5" fill="#d4a84b" opacity="0.5" transform="rotate(-15,-19,-10)"/>
+        <ellipse cx="-28" cy="-10" rx="3" ry="1.5" fill="#d4a84b" opacity="0.5" transform="rotate(-5,-28,-10)"/>
+      </g>
+      <!-- center knot -->
+      <circle cx="60" cy="28" r="4" fill="#d4a84b"/>
+      <circle cx="60" cy="28" r="2.2" fill="#f0c840"/>
+    </svg>
+  </div>
+
+  <div class="hero-sub" id="hero-sub">–</div>
+</div>
+
+<!-- Schicht-Banner -->
+<div class="schicht-banner frei" id="schicht-banner">
+  <div class="schicht-left">Schicht heute (Gruppe 3)</div>
+  <div class="schicht-badge" id="schicht-badge">–</div>
+</div>
+
+<!-- Kacheln Reihe 1: Kalender / Arbeit / Stunden -->
+<div class="tiles" style="margin-bottom:1rem">
+  <div class="tile t-blue">
+    <div class="tile-label">Kalendertage</div>
+    <div class="tile-num" id="kaltage">–</div>
+    <div class="tile-unit">Tage</div>
+  </div>
+  <div class="tile t-gold">
+    <div class="tile-label">Arbeitstage</div>
+    <div class="tile-num" id="arbeitstage">–</div>
+    <div class="tile-unit">Schichten</div>
+  </div>
+  <div class="tile t-green">
+    <div class="tile-label">Arbeitsstunden</div>
+    <div class="tile-num" id="stunden">–</div>
+    <div class="tile-unit">Stunden (à 7:12 h)</div>
+  </div>
+</div>
+
+<!-- Detailzeile -->
+<div class="details">
+  <div class="dbox">
+    <div class="dbox-num" id="det-jahre-monate">–</div>
+    <div class="dbox-label">Jahre &amp; Monate</div>
+  </div>
+  <div class="dbox">
+    <div class="dbox-num" id="det-monate-gesamt">–</div>
+    <div class="dbox-label">Gesamtmonate</div>
+  </div>
+  <div class="dbox">
+    <div class="dbox-num" id="det-wochen">–</div>
+    <div class="dbox-label">Wochen bis Rente</div>
+  </div>
+  <div class="dbox">
+    <div class="dbox-num" id="det-minuten">–</div>
+    <div class="dbox-label">Arbeitsminuten</div>
+  </div>
+</div>
+
+<!-- Therapy-Stunde -->
+<div id="therapy-block" hidden style="width:100%;max-width:760px;background:rgba(80,80,80,0.35);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.6rem;margin-bottom:1rem;text-align:center;">
+  <div style="font-size:1.5rem;font-weight:800;color:#ffffff;text-shadow:0 1px 6px rgba(0,0,0,.5);letter-spacing:0.05em;">Therapy-Stunde</div>
+  <div style="font-size:0.9rem;color:#ccc;margin-top:0.3rem;" id="therapy-datum">Stand: – · Letzte Spätschicht-Besprechung</div>
+</div>
+
+<!-- Fortschritt -->
+<div class="progress-section">
+  <div class="progress-header">
+    <span>Karrierestart</span>
+    <span>Ziel: Rente 🎉</span>
+  </div>
+  <div class="progress-bg">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="progress-pct" id="pct-label">0 %</div>
+</div>
+
+<!-- Nacht + Wochenenden -->
+<div class="we-box">
+  <div class="tile t-purple">
+    <div class="tile-label">Nachtschichten</div>
+    <div class="tile-num" id="nachtschichten">–</div>
+    <div class="tile-unit">noch zu schieben 🌙</div>
+  </div>
+  <div class="tile t-teal">
+    <div class="tile-label">Freie Wochenenden</div>
+    <div class="tile-num" id="freie-we">–</div>
+    <div class="tile-unit">Sa &amp; So frei 😴</div>
+  </div>
+  <div class="tile t-red">
+    <div class="tile-label">Nächstes freies WE</div>
+    <div class="tile-num" id="naechstes-we" style="font-size:1.1rem">–</div>
+    <div class="tile-unit" id="naechstes-we-datum">–</div>
+  </div>
+</div>
+
+<footer id="footer-datum"></footer>
+
+<script>
+  // Sterne generieren
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--delay:${Math.random()*4}s`;
+    starsEl.appendChild(s);
+  }
+
+  const RENTE    = new Date('2036-01-01T00:00:00');
+  const KARRIERE = new Date('1996-01-01T00:00:00');
+  const ZYKLUS   = [
+    'Spät', null, 'Früh', 'Früh', 'Früh', 'Früh', 'Früh', 'Früh', 'Früh',
+    null, null, 'Nacht', 'Nacht', 'Nacht', null, 'Spät', 'Spät', 'Spät',
+    'Spät', null, null, 'Nacht', 'Nacht', 'Nacht', 'Nacht', null, 'Spät', 'Spät'
+  ];
+  const ANKERPUNKT = new Date('2026-01-01T00:00:00');
+
+  function schichtFuerDatum(d) {
+    const diff = Math.floor((d - ANKERPUNKT) / 86400000);
+    return ZYKLUS[((diff % 28) + 28) % 28];
+  }
+
+  function arbeitstageZaehlen(von, bis) {
+    let n = 0, d = new Date(von); d.setHours(0,0,0,0);
+    const e = new Date(bis); e.setHours(0,0,0,0);
+    while (d < e) { if (schichtFuerDatum(d)) n++; d.setDate(d.getDate()+1); }
+    return n;
+  }
+
+  function update() {
+    const now = new Date();
+    if (RENTE - now <= 0) {
+      document.querySelector('.hero-days').textContent = '🎉';
+      document.querySelector('.hero-label').textContent = 'Du bist in Rente!';
+      return;
+    }
+
+    const heute = new Date(); heute.setHours(0,0,0,0);
+    const morgen = new Date(heute); morgen.setDate(morgen.getDate()+1);
+    const kalTage    = Math.ceil((RENTE - now) / 86400000);
+    const arbeitstage = arbeitstageZaehlen(morgen, RENTE);
+    const stunden    = arbeitstage * 7.2;
+    const minuten    = arbeitstage * 432;
+    const wochen     = Math.floor(kalTage / 7);
+
+    let jahre = RENTE.getFullYear() - now.getFullYear();
+    let monate = RENTE.getMonth() - now.getMonth();
+    if (monate < 0) { jahre--; monate += 12; }
+    const gesamtMonate = jahre * 12 + monate;
+
+    const pct = Math.min(100, Math.max(0, (now - KARRIERE) / (RENTE - KARRIERE) * 100));
+
+    // Nacht + freie WE
+    let nacht = 0, freieWE = 0, naechstesWE = null;
+    let d2 = new Date(morgen); d2.setHours(0,0,0,0);
+    const renteD = new Date('2036-01-01'); renteD.setHours(0,0,0,0);
+    while (d2 < renteD) {
+      const s2 = schichtFuerDatum(d2);
+      if (s2 === 'Nacht') nacht++;
+      if (d2.getDay() === 6) {
+        const so2 = new Date(d2); so2.setDate(so2.getDate()+1);
+        if (!s2 && !schichtFuerDatum(so2)) {
+          freieWE++;
+          if (!naechstesWE) naechstesWE = new Date(d2);
+        }
+      }
+      d2.setDate(d2.getDate()+1);
+    }
+
+    // Schicht
+    const schicht = schichtFuerDatum(heute);
+    const banner  = document.getElementById('schicht-banner');
+    const badge   = document.getElementById('schicht-badge');
+    if (!schicht) {
+      banner.className = 'schicht-banner frei';
+      badge.textContent = 'Frei 😊';
+    } else if (schicht === 'Früh') {
+      banner.className = 'schicht-banner frueh';
+      badge.textContent = '🌅 Frühschicht';
+    } else if (schicht === 'Spät') {
+      banner.className = 'schicht-banner spaet';
+      badge.textContent = '🌆 Spätschicht';
+    } else {
+      banner.className = 'schicht-banner nacht';
+      badge.textContent = '🌙 Nachtschicht';
+    }
+    // Heutiges Datum in Titel
+    const wt = ['So','Mo','Di','Mi','Do','Fr','Sa'][heute.getDay()];
+    document.querySelector('.schicht-left').textContent =
+      'Schicht heute · ' + wt + ' ' + heute.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+    // DOM
+    const loc = n => n.toLocaleString('de-DE');
+    document.getElementById('hdr-tage').textContent        = loc(kalTage);
+    const resttage = kalTage - (jahre * 365 + monate * 30);
+    document.getElementById('hero-sub').textContent = jahre + ' Jahre · ' + monate + ' Monate · ' + (kalTage % 30) + ' Resttage';
+    document.getElementById('kaltage').textContent         = loc(kalTage);
+    document.getElementById('arbeitstage').textContent     = loc(arbeitstage);
+    document.getElementById('stunden').textContent         = loc(Math.floor(stunden));
+    document.getElementById('det-jahre-monate').textContent = jahre + 'J ' + monate + 'M';
+    document.getElementById('det-monate-gesamt').textContent = loc(gesamtMonate);
+    document.getElementById('det-wochen').textContent      = loc(wochen);
+    document.getElementById('det-minuten').textContent     = loc(minuten);
+    document.getElementById('progress-fill').style.width   = pct.toFixed(2) + '%';
+    document.getElementById('pct-label').textContent       = pct.toFixed(1) + ' % geschafft';
+    document.getElementById('nachtschichten').textContent  = loc(nacht);
+    document.getElementById('freie-we').textContent        = loc(freieWE);
+
+    if (naechstesWE) {
+      const so3 = new Date(naechstesWE); so3.setDate(so3.getDate()+1);
+      const o = {day:'2-digit', month:'2-digit'};
+      document.getElementById('naechstes-we').textContent =
+        naechstesWE.toLocaleDateString('de-DE',o) + ' – ' + so3.toLocaleDateString('de-DE',o);
+      const diff2 = Math.ceil((naechstesWE - heute) / 86400000);
+      document.getElementById('naechstes-we-datum').textContent = 'in ' + diff2 + ' Tagen';
+    }
+
+    document.getElementById('footer-datum').textContent =
+      'Stand: ' + now.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'});
+
+    // Therapy-Block: nur anzeigen wenn heute Spätschicht ist UND die nächste Spätschicht nach dem Rentendatum liegt
+    if (schichtFuerDatum(heute) === 'Spät') {
+      // Nächste Spätschicht nach heute suchen
+      let naechsteSpät = new Date(heute);
+      naechsteSpät.setDate(naechsteSpät.getDate() + 1);
+      while (schichtFuerDatum(naechsteSpät) !== 'Spät') {
+        naechsteSpät.setDate(naechsteSpät.getDate() + 1);
+      }
+      // Wenn diese nächste Spätschicht nach dem Rentendatum ist → heute ist die LETZTE Spätschicht
+      if (naechsteSpät >= RENTE) {
+        const block = document.getElementById('therapy-block');
+        block.hidden = false;
+        document.getElementById('therapy-datum').textContent =
+          'Stand: ' + heute.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'}) + ' · Letzte Spätschicht-Besprechung';
+      }
+    }
+  }
+
+  update();
+  setInterval(update, 60000);
+</script>
+
+</body></html>
