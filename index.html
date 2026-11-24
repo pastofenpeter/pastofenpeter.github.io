@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Renten-Countdown</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Cinzel+Decorative:wght@700&display=swap">
 
 <style>
   :root {
@@ -66,7 +66,7 @@
 
   body {
     font-family: 'Space Grotesk', system-ui, sans-serif;
-    background: linear-gradient(to bottom, #101810 0%, #1e2b18 30%, #c8d8b8 65%, #e8f0d8 100%);
+    background: #1e2b18;
     color: var(--fg);
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -361,7 +361,7 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-label" style="margin-top:0;margin-bottom:0.3rem;font-size:1.3rem;font-weight:700;color:#eef3e8;text-shadow:0 0 24px rgba(138,173,90,.5), 0 2px 8px rgba(0,0,0,.4);">Tage bis zur Rente</div>
+  <div class="hero-label" style="margin-top:0;margin-bottom:0.3rem;font-family:'Cinzel Decorative',serif;font-size:2rem;font-weight:700;color:#f0c840;text-shadow:0 0 24px rgba(240,200,64,.7), 0 0 48px rgba(212,168,75,.5), 0 2px 8px rgba(0,0,0,.5);letter-spacing:0.08em;">Pastofenpeter</div>
   <div class="hero-days" id="hdr-tage">–</div>
   <div class="kranz">
     <svg viewBox="0 0 120 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -450,12 +450,6 @@
   </div>
 </div>
 
-<!-- Therapy-Stunde -->
-<div id="therapy-block" hidden style="width:100%;max-width:760px;background:rgba(80,80,80,0.35);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.6rem;margin-bottom:1rem;text-align:center;">
-  <div style="font-size:1.5rem;font-weight:800;color:#ffffff;text-shadow:0 1px 6px rgba(0,0,0,.5);letter-spacing:0.05em;">Therapy-Stunde</div>
-  <div style="font-size:0.9rem;color:#ccc;margin-top:0.3rem;" id="therapy-datum">Stand: – · Letzte Spätschicht-Besprechung</div>
-</div>
-
 <!-- Fortschritt -->
 <div class="progress-section">
   <div class="progress-header">
@@ -485,6 +479,12 @@
     <div class="tile-num" id="naechstes-we" style="font-size:1.1rem">–</div>
     <div class="tile-unit" id="naechstes-we-datum">–</div>
   </div>
+</div>
+
+<!-- Therapy-Stunde -->
+<div id="therapy-block" hidden style="width:100%;max-width:760px;background:#4a4a4a;border-radius:14px;padding:1.2rem 1.6rem;margin-bottom:1rem;text-align:center;">
+  <div style="font-size:1.5rem;font-weight:800;color:#ffffff;letter-spacing:0.05em;">Therapy-Stunde</div>
+  <div style="font-size:0.9rem;color:#ddd;margin-top:0.3rem;" id="therapy-datum">Stand: – · Spätschicht-Besprechung</div>
 </div>
 
 <footer id="footer-datum"></footer>
@@ -584,7 +584,7 @@
 
     // DOM
     const loc = n => n.toLocaleString('de-DE');
-    document.getElementById('hdr-tage').textContent        = loc(kalTage);
+    document.getElementById('hdr-tage').textContent        = loc(arbeitstage);
     const resttage = kalTage - (jahre * 365 + monate * 30);
     document.getElementById('hero-sub').textContent = jahre + ' Jahre · ' + monate + ' Monate · ' + (kalTage % 30) + ' Resttage';
     document.getElementById('kaltage').textContent         = loc(kalTage);
@@ -611,21 +611,13 @@
     document.getElementById('footer-datum').textContent =
       'Stand: ' + now.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'});
 
-    // Therapy-Block: nur anzeigen wenn heute Spätschicht ist UND die nächste Spätschicht nach dem Rentendatum liegt
-    if (schichtFuerDatum(heute) === 'Spät') {
-      // Nächste Spätschicht nach heute suchen
-      let naechsteSpät = new Date(heute);
-      naechsteSpät.setDate(naechsteSpät.getDate() + 1);
-      while (schichtFuerDatum(naechsteSpät) !== 'Spät') {
-        naechsteSpät.setDate(naechsteSpät.getDate() + 1);
-      }
-      // Wenn diese nächste Spätschicht nach dem Rentendatum ist → heute ist die LETZTE Spätschicht
-      if (naechsteSpät >= RENTE) {
-        const block = document.getElementById('therapy-block');
-        block.hidden = false;
-        document.getElementById('therapy-datum').textContent =
-          'Stand: ' + heute.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'}) + ' · Letzte Spätschicht-Besprechung';
-      }
+    // Therapy-Block: immer wenn Mo oder Do + Spätschicht
+    const wochentag = heute.getDay(); // 1=Mo, 4=Do
+    if ((wochentag === 1 || wochentag === 4) && schichtFuerDatum(heute) === 'Spät') {
+      const block = document.getElementById('therapy-block');
+      block.hidden = false;
+      document.getElementById('therapy-datum').textContent =
+        'Stand: ' + heute.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'}) + ' · Spätschicht-Besprechung';
     }
   }
 
